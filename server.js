@@ -1,6 +1,10 @@
 const express = require("express"),
   app = express(),
-  PORT = process.env.PORT || 5000;
+  PORT = process.env.PORT || 5000,
+  connectDB = require("./config/db");
+
+// Connecting to the database
+connectDB();
 
 app.get("/", (req, res) => {
   res.send("Hello World");
