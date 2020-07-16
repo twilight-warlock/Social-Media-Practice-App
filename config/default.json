@@ -1,3 +1,4 @@
 {
-  "mongoURI": "mongodb+srv://warlock:abcd1234@devconnectormern.geoq8.mongodb.net/<dbname>?retryWrites=true&w=majority"
+  "mongoURI": "mongodb+srv://warlock:abcd1234@devconnectormern.geoq8.mongodb.net/<dbname>?retryWrites=true&w=majority",
+  "jwtSecret": "one step at a time"
 }
