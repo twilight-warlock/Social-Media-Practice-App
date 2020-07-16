@@ -8,7 +8,7 @@ const express = require("express"),
   config = require("config");
 
 // @route   POST api/users
-// @desc    Test route
+// @desc    Reister user
 // @access  Public
 router.post(
   "/",
