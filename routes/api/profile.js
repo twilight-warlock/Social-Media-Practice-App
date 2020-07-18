@@ -3,7 +3,9 @@ const express = require("express"),
   auth = require("../../middleware/auth"),
   Profile = require("../../models/Profile"),
   User = require("../../models/User"),
-  { check, validationResult } = require("express-validator");
+  { check, validationResult } = require("express-validator"),
+  config = require("config"),
+  axios = require("axios");
 
 // @route   GET api/profile/me
 // @desc    Get current user's profile
@@ -160,6 +162,8 @@ router.delete("/", auth, async (req, res) => {
   }
 });
 
+// -------------------------Profile-Experience--------------------------
+
 // @route   PUT api/profile/experience
 // @desc    Adds profile Experience
 // @access  Private
@@ -207,18 +211,16 @@ router.put(
   }
 );
 
-// @route   DELETE api/profile/experience
+// @route   DELETE api/profile/experience/:exp_id
 // @desc    Deletes user's experience
 // @access  Private
 router.delete("/experience/:exp_id", auth, async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user.id });
 
-    const removeIndexedExp = profile.experience
-      .map((item) => item.id)
-      .indexOf(req.params.exp_id);
-
-    profile.experience.splice(removeIndexedExp, 1);
+    const removeIndexedExp = profile.experience.filter(
+      (exp) => exp._id.toString() !== req.params.exp_id
+    );
 
     await profile.save();
 
@@ -226,6 +228,100 @@ router.delete("/experience/:exp_id", auth, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
+  }
+});
+
+// ------------------------Profile-Education-------------------------
+
+// @route   PUT api/profile/education
+// @desc    Adds profile education
+// @access  Private
+router.put(
+  "/education",
+  [
+    auth,
+    [
+      check("school", "Title is required").not().isEmpty(),
+      check("degree", "Company is required").not().isEmpty(),
+      check("from", "from date is required").not().isEmpty(),
+      check("fieldofstudy", "Field of study date is required").not().isEmpty(),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+    }
+
+    // Getting data from req.body
+    const {
+      school,
+      degree,
+      fieldofstudy,
+      from,
+      to,
+      current,
+      desciption,
+    } = req.body;
+
+    // Storing it in an object
+    const edu = { school, degree, fieldofstudy, from, to, current, desciption };
+    try {
+      const profile = await Profile.findOne({ user: req.user.id });
+      profile.education.unshift(edu);
+
+      // Saving the experince to the profile
+      await profile.save();
+
+      res.json(profile);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server Error");
+    }
+  }
+);
+
+// @route   DELETE api/profile/education/:edu_id
+// @desc    Deletes user's education
+// @access  Private
+router.delete("/education/:edu_id", auth, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id });
+
+    const removeIndexedExp = profile.education.filter(
+      (edu) => edu._id.toString() !== req.params.edu_id
+    );
+
+    await profile.save();
+
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// @route    GET api/profile/github/:username
+// @desc     Get user repos from Github
+// @access   Public
+router.get("/github/:username", async (req, res) => {
+  try {
+    const uri = encodeURI(
+      `https://api.github.com/users/${
+        req.params.username
+      }/repos?per_page=5&sort=created:asc&client_id=${config.get(
+        "github_CLIENT_ID"
+      )}&client_secret=${config.get("github_Client_Secret")}`
+    );
+    const headers = {
+      "user-agent": "node.js",
+    };
+
+    const gitHubResponse = await axios.get(uri, { headers });
+    return res.json(gitHubResponse.data);
+  } catch (err) {
+    console.error(err.message);
+    return res.status(404).json({ msg: "No Github profile found" });
   }
 });
 

@@ -1,4 +1,6 @@
 {
   "mongoURI": "mongodb+srv://warlock:abcd1234@devconnectormern.geoq8.mongodb.net/<dbname>?retryWrites=true&w=majority",
-  "jwtSecret": "one step at a time"
+  "jwtSecret": "one step at a time",
+  "github_CLIENT_ID": "11c8374f0fbca63363f8",
+  "github_Client_Secret": "dbc5da9f5fb5e4392d316210dfbd300b7da58d6d"
 }
